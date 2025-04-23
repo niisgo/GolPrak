@@ -1,4 +1,4 @@
-/*
+package de.lab4inf.gol;/*
  * Project: GoL2025
  *
  * Copyright (c) 2004-2025,  Prof. Dr. Nikolaus Wulff

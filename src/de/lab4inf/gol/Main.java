@@ -1,4 +1,4 @@
-/*
+package de.lab4inf.gol;/*
  * Project: GoL2025
  *
  * Copyright (c) 2004-2025,  Prof. Dr. Nikolaus Wulff
@@ -20,7 +20,7 @@
  */
 
 /**
- * Bootstrap Main class with a main method for the GoL initialization.
+ * Bootstrap de.lab4inf.gol.Main class with a main method for the GoL initialization.
  * @author nwulff
  *
  */
@@ -128,8 +128,6 @@ public class Main {
 	 */
 	public static boolean[][] worstPattern() {
 		boolean[][] pattern = {{false,true,false},{true,false,true},{true,false,true},{false,true,false}};
-
-
 		return pattern;
 	}
 
