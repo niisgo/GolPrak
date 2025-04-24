@@ -4,12 +4,10 @@ import de.lab4inf.gol.GameOfLifeModel;
 
 import javax.swing.JComponent;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 
 public class GameOfLifeView extends JComponent {
     private final GameOfLifeModel model;
-    private final int cellSize = 30;
 
     public GameOfLifeView(GameOfLifeModel model) {
         this.model = model;
@@ -21,24 +19,28 @@ public class GameOfLifeView extends JComponent {
         int rows = model.rows();
         int cols = model.columns();
 
+        int cellWidth = getWidth() / cols;
+        int cellHeight = getHeight() / rows;
+
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                int x = j * cellSize;
-                int y = i * cellSize;
+                int x = j * cellWidth;
+                int y = i * cellHeight;
 
+                // Gitter zeichnen
                 g.setColor(Color.LIGHT_GRAY);
-                g.drawRect(x, y, cellSize, cellSize);
+                g.drawRect(x, y, cellWidth, cellHeight);
 
+                // Lebende Zelle: Rechteck mit leichtem Abstand
                 if (model.get(i, j)) {
                     g.setColor(Color.BLUE);
-                    g.fillOval(x + 2, y + 2, cellSize - 4, cellSize - 4);
+                    g.fillOval(
+                            x + 2, y + 2,
+                            Math.max(0, cellWidth - 4),
+                            Math.max(0, cellHeight - 4)
+                    );
                 }
             }
         }
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(model.columns() * cellSize, model.rows() * cellSize);
     }
 }

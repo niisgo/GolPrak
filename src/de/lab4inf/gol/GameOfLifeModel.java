@@ -42,6 +42,7 @@ public class GameOfLifeModel {
 		generation = 0;
 		actualState = new boolean[n][m];
 	}
+
 	/**
 	 * Number of columns of this GoL.
 	 * @return number of columns
@@ -49,6 +50,7 @@ public class GameOfLifeModel {
 	public int columns() {
 		return actualState[0].length;
 	}
+
 	/**
 	 * Number of rows of this GoL.
 	 * @return number of rows
@@ -56,6 +58,7 @@ public class GameOfLifeModel {
 	public int rows() {
 		return actualState.length;
 	}
+
     /**
      * Get the internal state of cell (j,k).
      * @param j row index
@@ -65,6 +68,7 @@ public class GameOfLifeModel {
 	public boolean get(int j, int k) {
 		return actualState[j][k];
 	}
+
     /**
      * Set the internal state of cell (j,k).
      * @param j row index
@@ -74,6 +78,7 @@ public class GameOfLifeModel {
 	public void set(int j, int k, boolean value) {
 		actualState[j][k] = value;
 	}
+
     /**
      * Indicate if this GoL is alive, i.e. there is any living cell.
      * @return live indicator
@@ -88,6 +93,7 @@ public class GameOfLifeModel {
 		}
 		return false; // Alle Zellen sind tot
 	}
+
     /**
      * Set the given pattern at place (r,c).
      * @param r starting row
@@ -104,6 +110,7 @@ public class GameOfLifeModel {
 			}
 		}
 	}
+
 	/**
 	 * Get the actual generation counter.
 	 * @return generation counter
@@ -111,6 +118,7 @@ public class GameOfLifeModel {
 	public int getGeneration() {
 		return generation;
 	}
+
     /**
      * Calculate the next GoL generation.
      */

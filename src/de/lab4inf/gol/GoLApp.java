@@ -12,7 +12,7 @@ import javax.swing.JToolBar;
 public class GoLApp extends SwingApp {
     private GameOfLifeModel model;
     private GameOfLifeView view;
-    private final int maxGeneration = 81;
+    private final int maxGeneration = 999;
     private static String[] arguments;
 
     public static void main(String[] args) {
@@ -33,8 +33,7 @@ public class GoLApp extends SwingApp {
 
     @Override
     public void startUp() {
-        getFrame().pack();
-        getFrame().setResizable(false);
+        getFrame().setSize(400, 400);
         super.startUp();
         new Thread(() -> {
             do {
@@ -51,16 +50,16 @@ public class GoLApp extends SwingApp {
 
     @Override
     protected JToolBar createToolBar() {
-        return new JToolBar(); // optional leere Toolbar
+        return new JToolBar();
     }
 
     @Override
     protected JComponent createStatusBar(JTextField statusField) {
-        return new JPanel(); // optional leere Statusbar
+        return new JPanel();
     }
 
     @Override
     protected JMenuBar createMenuBar() {
-        return new JMenuBar(); // optional leere Menüleiste
+        return new JMenuBar();
     }
 }
