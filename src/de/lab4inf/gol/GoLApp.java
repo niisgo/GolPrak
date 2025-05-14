@@ -23,7 +23,7 @@ public class GoLApp extends SwingApp {
 
     @Override
     protected JComponent createContent() {
-        int nRows = 9, mCols = 9, xPos = 3, yPos = 3;
+        int nRows = 90, mCols = 90, xPos = 3, yPos = 3;
         model = new GameOfLifeModel(nRows, mCols);
         boolean[][] pattern = Main.patternFromCommandLine(arguments);
         model.setPattern(xPos, yPos, pattern);

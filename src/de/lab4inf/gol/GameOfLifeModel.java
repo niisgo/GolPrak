@@ -146,7 +146,7 @@ public class GameOfLifeModel {
 	}
 
 	// Zählt, wie viele lebende Nachbarn eine Zelle hat
-	private int countLivingNeighbors(int row, int col) {
+	public int countLivingNeighbors(int row, int col) {
 		int count = 0;
 		for (int i = row - 1; i <= row + 1; i++) {
 			for (int j = col - 1; j <= col + 1; j++) {
