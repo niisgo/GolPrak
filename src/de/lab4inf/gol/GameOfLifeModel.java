@@ -81,6 +81,10 @@ public class GameOfLifeModel {
 
 		for (int i = 0; i < pattern.length; i++) {
 			for (int j = 0; j < pattern[0].length; j++) {
+				if (!pattern[i][j]) {
+					continue;
+				}
+
 				int targetRow = r + i;
 				int targetCol = c + j;
 
