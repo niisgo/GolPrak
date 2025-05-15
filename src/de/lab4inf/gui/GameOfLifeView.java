@@ -19,25 +19,28 @@ public class GameOfLifeView extends JComponent {
         int rows = model.rows();
         int cols = model.columns();
 
-        int cellWidth = getWidth() / cols;
-        int cellHeight = getHeight() / rows;
+        int totalW = getWidth();
+        int totalH = getHeight();
 
         for (int i = 0; i < rows; i++) {
+            int y  = i * totalH / rows;
+            int h  = (i+1) * totalH / rows - y;
+
             for (int j = 0; j < cols; j++) {
-                int x = j * cellWidth;
-                int y = i * cellHeight;
+                int x = j * totalW / cols;
+                int w = (j+1) * totalW / cols - x;
 
-                // Gitter zeichnen
+                // Gitter
                 g.setColor(Color.LIGHT_GRAY);
-                g.drawRect(x, y, cellWidth, cellHeight);
+                g.drawRect(x, y, w, h);
 
-                // Lebende Zelle: Rechteck mit leichtem Abstand
+                // Lebende Zelle: leicht eingezogenes Oval
                 if (model.get(i, j)) {
                     g.setColor(Color.BLUE);
                     g.fillOval(
                             x + 2, y + 2,
-                            Math.max(0, cellWidth - 4),
-                            Math.max(0, cellHeight - 4)
+                            Math.max(0, w - 4),
+                            Math.max(0, h - 4)
                     );
                 }
             }

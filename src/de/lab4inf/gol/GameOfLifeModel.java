@@ -76,12 +76,23 @@ public class GameOfLifeModel {
 	 * @param pattern to set
 	 */
 	public void setPattern(int r, int c, boolean[][] pattern) {
+		int maxRow = rows();
+		int maxCol = columns();
+
 		for (int i = 0; i < pattern.length; i++) {
 			for (int j = 0; j < pattern[0].length; j++) {
-				set(r + i, c + j, pattern[i][j]);
+				int targetRow = r + i;
+				int targetCol = c + j;
+
+				// Prüfen, ob (targetRow,targetCol) im Modell liegt
+				if (targetRow >= 0 && targetRow < maxRow
+						&& targetCol >= 0 && targetCol < maxCol) {
+					set(targetRow, targetCol, true);
+				}
 			}
 		}
 	}
+
 
 	/**
 	 * Get the actual generation counter.
