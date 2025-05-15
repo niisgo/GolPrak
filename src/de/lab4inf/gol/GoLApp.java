@@ -38,7 +38,7 @@ public class GoLApp extends SwingApp {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-                if (shouldRun) {
+                if (shouldRun && model.isAlive()) {
                     model.nextGeneration();
                     view.repaint();
                 }
@@ -75,7 +75,7 @@ public class GoLApp extends SwingApp {
 
         // Settings menu
         JMenu settingsMenu = new JMenu("Settings");
-        int[] sizes = {10, 20, 30, 40};
+        int[] sizes = {10, 20, 30, 40, 50};
         for (int sz : sizes) {
             JMenuItem item = new JMenuItem(sz + "x" + sz);
             item.setToolTipText("Set grid size to " + sz + " rows and columns");
@@ -92,11 +92,9 @@ public class GoLApp extends SwingApp {
         for (String name : PatternFactory.getPatternNames()) {
             JMenuItem item = new JMenuItem(name);
             item.addActionListener(evt -> {
-                // clear the field
-                model.setDimensions(model.rows(), model.columns());
+                //model.setDimensions(model.rows(), model.columns());
                 shouldRun = false;
                 startMenuItem.setText("Start");
-                // set selected pattern centered
                 boolean[][] pat = PatternFactory.getPattern(name);
                 int r = (model.rows() - pat.length) / 2;
                 int c = (model.columns() - pat[0].length) / 2;
