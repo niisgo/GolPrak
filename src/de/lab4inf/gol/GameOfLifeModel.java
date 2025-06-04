@@ -1,10 +1,14 @@
 package de.lab4inf.gol;
 
+import java.util.ArrayList;
+
 public class GameOfLifeModel {
 	// state of the actualState
 	private boolean[][] actualState;
 	// actual generation counter
 	private int generation;
+
+	ArrayList<GameOfLifeListener> observer;
 
 	/**
 	 * Constructor for a GoL model instance.
@@ -18,6 +22,8 @@ public class GameOfLifeModel {
 		}
 		generation = 0;
 		actualState = new boolean[n][m];
+
+		observer = new ArrayList<>();
 	}
 
 	/**
@@ -125,6 +131,8 @@ public class GameOfLifeModel {
 		}
 		generation++;
 		actualState = next;
+
+		notifyGenerationChanged();
 	}
 
 	// Count living neighbors
@@ -152,5 +160,24 @@ public class GameOfLifeModel {
 		}
 		actualState = new boolean[n][m];
 		generation = 0;
+	}
+
+	public void addObserver(GameOfLifeListener listener) {
+		observer.add(listener);
+	}
+
+	public void removeObserver(GameOfLifeListener listener) {
+		observer.remove(listener);
+	}
+
+	public void notifyGenerationChanged() {
+		for (GameOfLifeListener listener : observer) {
+			listener.generationChanged();
+		}
+	}
+	public void notifyDimensionChanged() {
+		for (GameOfLifeListener listener : observer) {
+			listener.dimensionChanged();
+		}
 	}
 }

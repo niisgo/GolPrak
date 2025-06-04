@@ -3,13 +3,15 @@ package de.lab4inf.gol;
 import de.lab4inf.gui.GameOfLifeView;
 import de.lab4inf.gui.SwingApp;
 import javax.swing.*;
+import java.awt.*;
 
-public class GoLApp extends SwingApp {
+public class GoLApp extends SwingApp implements GameOfLifeListener{
     private GameOfLifeModel model;
     private GameOfLifeView view;
     private volatile boolean shouldRun = false;
     private JMenuItem startMenuItem;
     private static String[] arguments;
+    private JLabel sizeLabel;
 
     public static void main(String[] args) {
         arguments = args;
@@ -30,6 +32,8 @@ public class GoLApp extends SwingApp {
     @Override
     public void startUp() {
         getFrame().setSize(600, 600);
+        model.addObserver(this);
+        model.addObserver(view);
         super.startUp();
         new Thread(() -> {
             while (true) {
@@ -40,7 +44,6 @@ public class GoLApp extends SwingApp {
                 }
                 if (shouldRun && model.isAlive()) {
                     model.nextGeneration();
-                    view.repaint();
                 }
             }
         }).start();
@@ -48,12 +51,57 @@ public class GoLApp extends SwingApp {
 
     @Override
     protected JToolBar createToolBar() {
-        return new JToolBar();
+        JToolBar toolBar = new JToolBar();
+
+        JButton startButton = new JButton("Start");
+        startButton.addActionListener(evt -> {
+            shouldRun = !shouldRun;
+            startButton.setText(shouldRun ? "Stop" : "Start");
+        });
+
+        JButton stepButton = new JButton("Step");
+        stepButton.addActionListener(e -> {
+            if(model.isAlive()) {
+                model.nextGeneration();
+            }
+        });
+
+
+        toolBar.add(startButton);
+        toolBar.add(stepButton);
+
+        return toolBar;
     }
 
     @Override
     protected JComponent createStatusBar(JTextField statusField) {
-        return new JPanel();
+        JPanel statusBar = new JPanel(new BorderLayout());
+
+        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel statusLabel = new JLabel("Status:");
+        statusLabel.setFont(statusLabel.getFont().deriveFont(Font.BOLD));
+
+        statusField.setEditable(false);
+        statusField.setBorder(BorderFactory.createEtchedBorder());
+        statusField.setForeground(Color.BLUE);
+        statusField.setPreferredSize(new Dimension(250, 20));
+
+        leftPanel.add(statusLabel);
+        leftPanel.add(statusField);
+
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JLabel openLabel = new JLabel("Open");
+        openLabel.setForeground(Color.BLUE);
+        sizeLabel = new JLabel("10x10");
+
+        rightPanel.add(openLabel);
+        rightPanel.add(sizeLabel);
+
+        statusBar.add(leftPanel, BorderLayout.WEST);
+        statusBar.add(rightPanel, BorderLayout.EAST);
+        statusBar.setBorder(BorderFactory.createEtchedBorder());
+
+        return statusBar;
     }
 
     @Override
@@ -81,7 +129,7 @@ public class GoLApp extends SwingApp {
             item.setToolTipText("Set grid size to " + sz + " rows and columns");
             item.addActionListener(evt -> {
                 model.setDimensions(sz, sz);
-                view.repaint();
+                model.notifyDimensionChanged();
             });
             settingsMenu.add(item);
         }
@@ -106,5 +154,15 @@ public class GoLApp extends SwingApp {
         menuBar.add(patternsMenu);
 
         return menuBar;
+    }
+
+    @Override
+    public void generationChanged() {
+        setStatusMsg("current generation: " + model.getGeneration());
+    }
+
+    @Override
+    public void dimensionChanged() {
+        sizeLabel.setText(view.model.rows() + "x" + view.model.rows());
     }
 }

@@ -1,13 +1,14 @@
 package de.lab4inf.gui;
 
+import de.lab4inf.gol.GameOfLifeListener;
 import de.lab4inf.gol.GameOfLifeModel;
 
 import javax.swing.JComponent;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class GameOfLifeView extends JComponent {
-    private final GameOfLifeModel model;
+public class GameOfLifeView extends JComponent implements GameOfLifeListener {
+    public final GameOfLifeModel model;
 
     public GameOfLifeView(GameOfLifeModel model) {
         this.model = model;
@@ -45,5 +46,15 @@ public class GameOfLifeView extends JComponent {
                 }
             }
         }
+    }
+
+    @Override
+    public void generationChanged() {
+        repaint();
+    }
+
+    @Override
+    public void dimensionChanged() {
+        repaint();
     }
 }
