@@ -2,6 +2,9 @@ package de.lab4inf.gol;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameOfLifeModelTest {
@@ -204,5 +207,68 @@ class GameOfLifeModelTest {
         assertEquals(1, model.getGeneration());
         model.setDimensions(4, 4);
         assertEquals(0, model.getGeneration(), "Generation should be reset after dimension change");
+    }
+
+
+    @Test
+    void testAddAndNotifyObserver() {
+        AtomicBoolean called = new AtomicBoolean(false);
+
+        GameOfLifeListener listener = new GameOfLifeListener() {
+            @Override
+            public void generationChanged() {
+                called.set(true);
+            }
+
+            @Override
+            public void dimensionChanged() {
+            }
+        };
+
+        model.addObserver(listener);
+        model.nextGeneration();
+        assertTrue(called.get());
+    }
+
+    @Test
+    void testRemoveObserver() {
+        AtomicBoolean called = new AtomicBoolean(false);
+
+        GameOfLifeListener listener = new GameOfLifeListener() {
+            @Override
+            public void generationChanged() {
+                called.set(true);
+            }
+
+            @Override
+            public void dimensionChanged() {
+            }
+        };
+
+        model.addObserver(listener);
+        model.removeObserver(listener);
+        model.nextGeneration();
+        assertFalse(called.get());
+    }
+
+    @Test
+    void testDimensionChangedNotification() {
+        AtomicBoolean called = new AtomicBoolean(false);
+
+        GameOfLifeListener listener = new GameOfLifeListener() {
+            @Override
+            public void generationChanged() {
+            }
+
+            @Override
+            public void dimensionChanged() {
+                called.set(true);
+            }
+        };
+
+        model.addObserver(listener);
+        model.setDimensions(6, 6);
+        model.notifyDimensionChanged();  // falls setDimensions das nicht automatisch macht
+        assertTrue(called.get());
     }
 }
