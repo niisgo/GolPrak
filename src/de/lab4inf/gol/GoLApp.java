@@ -5,13 +5,14 @@ import de.lab4inf.gui.SwingApp;
 import javax.swing.*;
 import java.awt.*;
 
-public class GoLApp extends SwingApp implements GameOfLifeListener{
+public class GoLApp extends SwingApp implements GameOfLifeListener {
     private GameOfLifeModel model;
     private GameOfLifeView view;
     private volatile boolean shouldRun = false;
+    private JButton startButton;
     private JMenuItem startMenuItem;
-    private static String[] arguments;
     private JLabel sizeLabel;
+    private static String[] arguments;
 
     public static void main(String[] args) {
         arguments = args;
@@ -53,19 +54,22 @@ public class GoLApp extends SwingApp implements GameOfLifeListener{
     protected JToolBar createToolBar() {
         JToolBar toolBar = new JToolBar();
 
-        JButton startButton = new JButton("Start");
+        startButton = new JButton("Start");
         startButton.addActionListener(evt -> {
             shouldRun = !shouldRun;
-            startButton.setText(shouldRun ? "Stop" : "Start");
+            String text = shouldRun ? "Stop" : "Start";
+            startButton.setText(text);
+            if (startMenuItem != null) {
+                startMenuItem.setText(text);
+            }
         });
 
         JButton stepButton = new JButton("Step");
         stepButton.addActionListener(e -> {
-            if(model.isAlive()) {
+            if (model.isAlive()) {
                 model.nextGeneration();
             }
         });
-
 
         toolBar.add(startButton);
         toolBar.add(stepButton);
@@ -108,12 +112,15 @@ public class GoLApp extends SwingApp implements GameOfLifeListener{
     protected JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
-        // File menu
         JMenu fileMenu = new JMenu("File");
         startMenuItem = new JMenuItem("Start");
         startMenuItem.addActionListener(evt -> {
             shouldRun = !shouldRun;
-            startMenuItem.setText(shouldRun ? "Stop" : "Start");
+            String text = shouldRun ? "Stop" : "Start";
+            startMenuItem.setText(text);
+            if (startButton != null) {
+                startButton.setText(text);
+            }
         });
         fileMenu.add(startMenuItem);
         JMenuItem exitItem = new JMenuItem("Exit");
@@ -121,7 +128,6 @@ public class GoLApp extends SwingApp implements GameOfLifeListener{
         fileMenu.add(exitItem);
         menuBar.add(fileMenu);
 
-        // Settings menu
         JMenu settingsMenu = new JMenu("Settings");
         int[] sizes = {10, 20, 30, 40, 50};
         for (int sz : sizes) {
@@ -135,14 +141,15 @@ public class GoLApp extends SwingApp implements GameOfLifeListener{
         }
         menuBar.add(settingsMenu);
 
-        // Patterns menu
         JMenu patternsMenu = new JMenu("Patterns");
         for (String name : PatternFactory.getPatternNames()) {
             JMenuItem item = new JMenuItem(name);
             item.addActionListener(evt -> {
-                //model.setDimensions(model.rows(), model.columns());
                 shouldRun = false;
                 startMenuItem.setText("Start");
+                if (startButton != null) {
+                    startButton.setText("Start");
+                }
                 boolean[][] pat = PatternFactory.getPattern(name);
                 int r = (model.rows() - pat.length) / 2;
                 int c = (model.columns() - pat[0].length) / 2;
