@@ -182,7 +182,6 @@ public class GameOfLifeModel {
 			System.arraycopy(actualState[i], 0, newState[i], 0, minCols);
 		}
 		actualState = newState;
-		generation = 0;
 		notifyDimensionChanged();
 	}
 

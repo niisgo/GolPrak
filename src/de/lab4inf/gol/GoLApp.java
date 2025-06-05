@@ -1,16 +1,15 @@
 package de.lab4inf.gol;
 
-import de.lab4inf.gui.GameOfLifeView;
-import de.lab4inf.gui.SwingApp;
+import de.lab4inf.gui.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 public class GoLApp extends SwingApp implements GameOfLifeListener {
     private GameOfLifeModel model;
     private GameOfLifeView view;
     private volatile boolean shouldRun = false;
+
     private JButton startButton;
     private JMenuItem startMenuItem;
     private JLabel sizeLabel;
@@ -24,42 +23,74 @@ public class GoLApp extends SwingApp implements GameOfLifeListener {
 
     @Override
     protected JComponent createContent() {
-        int nRows = 10, mCols = 10, xPos = 3, yPos = 3;
+        int nRows = 10;
+        int mCols = 10;
+        int xPos = 3;
+        int yPos = 3;
+
         model = new GameOfLifeModel(nRows, mCols);
         boolean[][] pattern = Main.patternFromCommandLine(arguments);
         model.setPattern(xPos, yPos, pattern);
-        view = new GameOfLifeView(model);
 
+        view = new GameOfLifeView(model);
         view.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                int cols = model.columns();
-                int rows = model.rows();
-                int cellWidth = view.getWidth() / cols;
-                int cellHeight = view.getHeight() / rows;
-                int col = e.getX() / cellWidth;
-                int row = e.getY() / cellHeight;
-                if (row >= 0 && row < rows && col >= 0 && col < cols) {
-                    boolean current = model.get(row, col);
-                    model.set(row, col, !current);
-                    view.repaint();
-                }
+                handleGridClick(e);
             }
         });
 
         return view;
     }
+
     @Override
     public void startUp() {
-        getFrame().setSize(550, 600);
+        getFrame().setSize(600, 600);
         model.addObserver(this);
         model.addObserver(view);
         super.startUp();
+
+        setupHotkey();
+        startGameLoop();
+    }
+
+    private void handleGridClick(MouseEvent e) {
+        int cols = model.columns();
+        int rows = model.rows();
+        int totalW = view.getWidth();
+        int totalH = view.getHeight();
+
+        // Berechne Spalte/Zelle proportional zur aktuellen Komponentengröße
+        int col = e.getX() * cols / totalW;
+        int row = e.getY() * rows / totalH;
+
+        if (row >= 0 && row < rows && col >= 0 && col < cols) {
+            boolean current = model.get(row, col);
+            model.set(row, col, !current);
+            view.repaint();
+        }
+    }
+
+    private void setupHotkey() {
+        JRootPane rp = getFrame().getRootPane();
+        InputMap im = rp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = rp.getActionMap();
+
+        im.put(KeyStroke.getKeyStroke("F12"), "easter");
+        am.put("easter", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MinorUpdate.trigger();
+            }
+        });
+    }
+
+    private void startGameLoop() {
         new Thread(() -> {
             while (true) {
                 try {
                     Thread.sleep(500);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 }
                 if (shouldRun && model.isAlive()) {
@@ -74,14 +105,7 @@ public class GoLApp extends SwingApp implements GameOfLifeListener {
         JToolBar toolBar = new JToolBar();
 
         startButton = new JButton("Start");
-        startButton.addActionListener(evt -> {
-            shouldRun = !shouldRun;
-            String text = shouldRun ? "Stop" : "Start";
-            startButton.setText(text);
-            if (startMenuItem != null) {
-                startMenuItem.setText(text);
-            }
-        });
+        startButton.addActionListener(evt -> toggleSimulation());
 
         JButton stepButton = new JButton("Step");
         stepButton.addActionListener(e -> {
@@ -96,6 +120,15 @@ public class GoLApp extends SwingApp implements GameOfLifeListener {
         return toolBar;
     }
 
+    private void toggleSimulation() {
+        shouldRun = !shouldRun;
+        String text = shouldRun ? "Stop" : "Start";
+        startButton.setText(text);
+        if (startMenuItem != null) {
+            startMenuItem.setText(text);
+        }
+    }
+
     @Override
     protected JComponent createStatusBar(JTextField statusField) {
         JPanel statusBar = new JPanel(new BorderLayout());
@@ -103,12 +136,10 @@ public class GoLApp extends SwingApp implements GameOfLifeListener {
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel statusLabel = new JLabel("Status:");
         statusLabel.setFont(statusLabel.getFont().deriveFont(Font.BOLD));
-
         statusField.setEditable(false);
         statusField.setBorder(BorderFactory.createEtchedBorder());
         statusField.setForeground(Color.BLUE);
         statusField.setPreferredSize(new Dimension(250, 20));
-
         leftPanel.add(statusLabel);
         leftPanel.add(statusField);
 
@@ -116,7 +147,6 @@ public class GoLApp extends SwingApp implements GameOfLifeListener {
         JLabel openLabel = new JLabel("Open");
         openLabel.setForeground(Color.BLUE);
         sizeLabel = new JLabel("10x10");
-
         rightPanel.add(openLabel);
         rightPanel.add(sizeLabel);
 
@@ -131,24 +161,31 @@ public class GoLApp extends SwingApp implements GameOfLifeListener {
     protected JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
+        menuBar.add(createFileMenu());
+        menuBar.add(createSettingsMenu());
+        menuBar.add(createPatternsMenu());
+
+        return menuBar;
+    }
+
+    private JMenu createFileMenu() {
         JMenu fileMenu = new JMenu("File");
+
         startMenuItem = new JMenuItem("Start");
-        startMenuItem.addActionListener(evt -> {
-            shouldRun = !shouldRun;
-            String text = shouldRun ? "Stop" : "Start";
-            startMenuItem.setText(text);
-            if (startButton != null) {
-                startButton.setText(text);
-            }
-        });
+        startMenuItem.addActionListener(evt -> toggleSimulation());
         fileMenu.add(startMenuItem);
+
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.addActionListener(evt -> shutDown());
         fileMenu.add(exitItem);
-        menuBar.add(fileMenu);
 
+        return fileMenu;
+    }
+
+    private JMenu createSettingsMenu() {
         JMenu settingsMenu = new JMenu("Settings");
         int[] sizes = {10, 20, 30, 40, 50};
+
         for (int sz : sizes) {
             JMenuItem item = new JMenuItem(sz + "x" + sz);
             item.setToolTipText("Set grid size to " + sz + " rows and columns");
@@ -158,28 +195,59 @@ public class GoLApp extends SwingApp implements GameOfLifeListener {
             });
             settingsMenu.add(item);
         }
-        menuBar.add(settingsMenu);
 
+        // Freifeld für eigene dimensions
+        JMenuItem customItem = new JMenuItem("Custom...");
+        customItem.setToolTipText("Enter custom rows and columns");
+        customItem.addActionListener(evt -> {
+            JTextField rowsField = new JTextField();
+            JTextField colsField = new JTextField();
+            Object[] message = {
+                    "Rows:", rowsField,
+                    "Columns:", colsField
+            };
+            int option = JOptionPane.showConfirmDialog(getFrame(), message,
+                    "Custom Grid Size", JOptionPane.OK_CANCEL_OPTION);
+            if (option == JOptionPane.OK_OPTION) {
+                try {
+                    int customRows = Integer.parseInt(rowsField.getText().trim());
+                    int customCols = Integer.parseInt(colsField.getText().trim());
+                    model.setDimensions(customRows, customCols);
+                    model.notifyDimensionChanged();
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(getFrame(),
+                            "Bitte gültige positive ganze Zahlen eingeben.",
+                            "Ungültige Eingabe", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        settingsMenu.addSeparator();
+        settingsMenu.add(customItem);
+
+        return settingsMenu;
+    }
+
+    private JMenu createPatternsMenu() {
         JMenu patternsMenu = new JMenu("Patterns");
         for (String name : PatternFactory.getPatternNames()) {
             JMenuItem item = new JMenuItem(name);
-            item.addActionListener(evt -> {
-                shouldRun = false;
-                startMenuItem.setText("Start");
-                if (startButton != null) {
-                    startButton.setText("Start");
-                }
-                boolean[][] pat = PatternFactory.getPattern(name);
-                int r = (model.rows() - pat.length) / 2;
-                int c = (model.columns() - pat[0].length) / 2;
-                model.setPattern(r, c, pat);
-                view.repaint();
-            });
+            item.addActionListener(evt -> applyPattern(name));
             patternsMenu.add(item);
         }
-        menuBar.add(patternsMenu);
+        return patternsMenu;
+    }
 
-        return menuBar;
+    private void applyPattern(String name) {
+        shouldRun = false;
+        startMenuItem.setText("Start");
+        if (startButton != null) {
+            startButton.setText("Start");
+        }
+        boolean[][] pat = PatternFactory.getPattern(name);
+        int r = (model.rows() - pat.length) / 2;
+        int c = (model.columns() - pat[0].length) / 2;
+        model.setPattern(r, c, pat);
+        view.repaint();
     }
 
     @Override
@@ -189,6 +257,6 @@ public class GoLApp extends SwingApp implements GameOfLifeListener {
 
     @Override
     public void dimensionChanged() {
-        sizeLabel.setText(view.model.rows() + "x" + view.model.rows());
+        sizeLabel.setText(model.rows() + "x" + model.columns());
     }
 }
