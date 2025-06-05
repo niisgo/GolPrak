@@ -51,7 +51,7 @@ public class GoLApp extends SwingApp implements GameOfLifeListener {
     }
     @Override
     public void startUp() {
-        getFrame().setSize(600, 600);
+        getFrame().setSize(550, 600);
         model.addObserver(this);
         model.addObserver(view);
         super.startUp();

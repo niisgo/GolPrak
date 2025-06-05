@@ -17,8 +17,7 @@ public class GameOfLifeModel {
 	 */
 	public GameOfLifeModel(int n, int m) {
 		if (n < 1 || m < 1) {
-			System.err.printf("n: %d, m: %d illegal values\n", n, m);
-			System.exit(-1);
+			throw new IllegalArgumentException("n: " + n + ", m: " + m + " illegal values");
 		}
 		generation = 0;
 		actualState = new boolean[n][m];
@@ -31,6 +30,7 @@ public class GameOfLifeModel {
 	 * @return number of columns
 	 */
 	public int columns() {
+		// actualState always has at least one row (constructor enforces n >= 1)
 		return actualState[0].length;
 	}
 
@@ -49,6 +49,9 @@ public class GameOfLifeModel {
 	 * @return state of the cell
 	 */
 	public boolean get(int j, int k) {
+		if (j < 0 || j >= rows() || k < 0 || k >= columns()) {
+			throw new IndexOutOfBoundsException("Cell indices out of range: (" + j + ", " + k + ")");
+		}
 		return actualState[j][k];
 	}
 
@@ -59,6 +62,9 @@ public class GameOfLifeModel {
 	 * @param value to set
 	 */
 	public void set(int j, int k, boolean value) {
+		if (j < 0 || j >= rows() || k < 0 || k >= columns()) {
+			throw new IndexOutOfBoundsException("Cell indices out of range: (" + j + ", " + k + ")");
+		}
 		actualState[j][k] = value;
 	}
 
@@ -82,11 +88,17 @@ public class GameOfLifeModel {
 	 * @param pattern to set
 	 */
 	public void setPattern(int r, int c, boolean[][] pattern) {
+		if (pattern == null || pattern.length == 0) {
+			throw new IllegalArgumentException("Pattern must not be null or empty");
+		}
 		int maxRow = rows();
 		int maxCol = columns();
 
 		for (int i = 0; i < pattern.length; i++) {
-			for (int j = 0; j < pattern[0].length; j++) {
+			if (pattern[i] == null) {
+				continue;
+			}
+			for (int j = 0; j < pattern[i].length; j++) {
 				if (!pattern[i][j]) {
 					continue;
 				}
@@ -97,7 +109,7 @@ public class GameOfLifeModel {
 				// Prüfen, ob (targetRow,targetCol) im Modell liegt
 				if (targetRow >= 0 && targetRow < maxRow
 						&& targetCol >= 0 && targetCol < maxCol) {
-					set(targetRow, targetCol, true);
+					actualState[targetRow][targetCol] = true;
 				}
 			}
 		}
@@ -116,11 +128,11 @@ public class GameOfLifeModel {
 	 * Calculate the next GoL generation.
 	 */
 	public void nextGeneration() {
-		int rows = actualState.length;
-		int cols = actualState[0].length;
-		boolean[][] next = new boolean[rows][cols];
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < cols; j++) {
+		int numRows = rows();
+		int numCols = columns();
+		boolean[][] next = new boolean[numRows][numCols];
+		for (int i = 0; i < numRows; i++) {
+			for (int j = 0; j < numCols; j++) {
 				int neighbors = countLivingNeighbors(i, j);
 				if (actualState[i][j]) {
 					next[i][j] = (neighbors == 2 || neighbors == 3);
@@ -137,11 +149,14 @@ public class GameOfLifeModel {
 
 	// Count living neighbors
 	public int countLivingNeighbors(int row, int col) {
+		if (row < 0 || row >= rows() || col < 0 || col >= columns()) {
+			throw new IndexOutOfBoundsException("Cell indices out of range: (" + row + ", " + col + ")");
+		}
 		int count = 0;
 		for (int i = row - 1; i <= row + 1; i++) {
 			for (int j = col - 1; j <= col + 1; j++) {
 				if (i == row && j == col) continue;
-				if (i >= 0 && i < actualState.length && j >= 0 && j < actualState[0].length) {
+				if (i >= 0 && i < rows() && j >= 0 && j < columns()) {
 					if (actualState[i][j]) count++;
 				}
 			}
@@ -160,13 +175,20 @@ public class GameOfLifeModel {
 		}
 		actualState = new boolean[n][m];
 		generation = 0;
+		notifyDimensionChanged();
 	}
 
 	public void addObserver(GameOfLifeListener listener) {
+		if (listener == null) {
+			throw new IllegalArgumentException("Listener must not be null");
+		}
 		observer.add(listener);
 	}
 
 	public void removeObserver(GameOfLifeListener listener) {
+		if (listener == null) {
+			return;
+		}
 		observer.remove(listener);
 	}
 
