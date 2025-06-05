@@ -173,7 +173,15 @@ public class GameOfLifeModel {
 		if (n < 1 || m < 1) {
 			throw new IllegalArgumentException("Dimensions must be >= 1: received " + n + "x" + m);
 		}
-		actualState = new boolean[n][m];
+		int oldRows = rows();
+		int oldCols = columns();
+		boolean[][] newState = new boolean[n][m];
+		int minRows = Math.min(oldRows, n);
+		int minCols = Math.min(oldCols, m);
+		for (int i = 0; i < minRows; i++) {
+			System.arraycopy(actualState[i], 0, newState[i], 0, minCols);
+		}
+		actualState = newState;
 		generation = 0;
 		notifyDimensionChanged();
 	}
