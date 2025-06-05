@@ -4,6 +4,8 @@ import de.lab4inf.gui.GameOfLifeView;
 import de.lab4inf.gui.SwingApp;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class GoLApp extends SwingApp implements GameOfLifeListener {
     private GameOfLifeModel model;
@@ -27,9 +29,26 @@ public class GoLApp extends SwingApp implements GameOfLifeListener {
         boolean[][] pattern = Main.patternFromCommandLine(arguments);
         model.setPattern(xPos, yPos, pattern);
         view = new GameOfLifeView(model);
+
+        view.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                int cols = model.columns();
+                int rows = model.rows();
+                int cellWidth = view.getWidth() / cols;
+                int cellHeight = view.getHeight() / rows;
+                int col = e.getX() / cellWidth;
+                int row = e.getY() / cellHeight;
+                if (row >= 0 && row < rows && col >= 0 && col < cols) {
+                    boolean current = model.get(row, col);
+                    model.set(row, col, !current);
+                    view.repaint();
+                }
+            }
+        });
+
         return view;
     }
-
     @Override
     public void startUp() {
         getFrame().setSize(600, 600);
